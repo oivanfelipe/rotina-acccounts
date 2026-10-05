@@ -177,7 +177,6 @@ const CENTRAL = ["Central", "https://central.studiov4carvalho.com.br/dashboard/s
 const EKYTE = ["Ekyte", "https://app.ekyte.com/#/home"];
 
 const DAILY = [
-  { t: "Evidência de serviço", r: ["A", "GT"], d: "Sem exceção. Alterne o assunto: campanha, resultado ou entrega. Account e GT dividem." },
   { t: "Ativar o grupo do cliente", r: ["A", "GT"], d: "Mensagem no grupo todos os dias." }
 ];
 const WEEKLY = [
@@ -185,28 +184,38 @@ const WEEKLY = [
 ];
 
 // Ações para cliente em RED (aparecem só com o interruptor ligado)
+// Evidência de serviço no grupo, sem exceção: Account (seg, qua, sex) e GT (ter, qui)
+const EVID_A = { t: "Evidência de serviço no grupo", r: ["A"], d: "Sem exceção. Alterne o assunto: campanha, resultado ou entrega." };
+const EVID_GT = { t: "Evidência de serviço no grupo", r: ["GT"], d: "Sem exceção. Alterne o assunto: campanha, resultado ou entrega." };
+
 const RED_PLAN = { t: "RED: evidenciar no grupo as ações a executar", r: ["A"], d: "Mostrar ao cliente, no grupo, as ações que serão executadas para ele durante a semana." };
 const RED_UPDATE = { t: "RED: update no grupo do cliente", r: ["A", "GT"], d: "Todo dia, sem exceção. O que está sendo feito, atualização de resultado e evidência de serviço." };
 
 const DAYS = [
   { d: 1, dow: "Seg", h: "Comitê", red: [RED_PLAN], tasks: [
     { t: "Realizar o comitê com o coordenador", r: ["A"], d: "Depende do que foi preparado na sexta anterior." },
-    { t: "Lançar as tarefas no Ekyte", r: ["A"], d: "Conforme as ações alinhadas e planejadas no comitê.", link: EKYTE }
+    { t: "Lançar as tarefas no Ekyte", r: ["A"], d: "Conforme as ações alinhadas e planejadas no comitê.", link: EKYTE },
+    EVID_A
   ]},
   { d: 2, dow: "Ter", h: "Campanhas", red: [RED_UPDATE], tasks: [
-    { t: "Atualizar o coordenador sobre as campanhas", r: ["A"], d: "Campanhas grandes de acompanhamento da unidade e campanhas sazonais: aniversário, Natal, Black etc." }
+    { t: "Atualizar o coordenador sobre as campanhas", r: ["A"], d: "Campanhas grandes de acompanhamento da unidade e campanhas sazonais: aniversário, Natal, Black etc." },
+    EVID_GT
   ]},
   { d: 3, dow: "Qua", h: "Account Planning", red: [RED_UPDATE], tasks: [
-    { t: "Atualizar o coordenador no Account Planning", r: ["A"], d: "Pela planilha de Account Planning, com as monetizações em andamento.", link: ["Account Planning", "https://docs.google.com/spreadsheets/d/1QTksU0kN_jOkSovEVr6OfAtHu-kkCDYGz4p6_o_LNIw/edit?gid=1536148557#gid=1536148557"] }
+    { t: "Atualizar o coordenador no Account Planning", r: ["A"], d: "Pela planilha de Account Planning, com as monetizações em andamento.", link: ["Account Planning", "https://docs.google.com/spreadsheets/d/1QTksU0kN_jOkSovEVr6OfAtHu-kkCDYGz4p6_o_LNIw/edit?gid=1536148557#gid=1536148557"] },
+    EVID_A
   ]},
-  { d: 4, dow: "Qui", h: "Update ao cliente", onlyRed: true, red: [RED_UPDATE], tasks: [] },
+  { d: 4, dow: "Qui", h: "Follow up do GT", red: [RED_UPDATE], tasks: [
+    { t: "Follow up do GT no grupo", r: ["GT"], d: "O GT faz o follow up com o cliente no grupo." },
+    EVID_GT
+  ]},
   { d: 5, dow: "Sex", h: "Revisão e preparo do comitê", red: [RED_UPDATE], tasks: [
     { t: "Revisar os rituais na Central", r: ["A", "GT"], d: "Conferir os rituais que foram executados na semana.", link: CENTRAL },
     { t: "GT: atualizar resultados e meta geral na Central", r: ["GT"], d: "Olhar o resultado de todos os clientes, lançar na Central e atualizar a meta geral do cliente.", link: CENTRAL },
     { t: "GT: passar o FCA de tráfego aos accounts", r: ["GT"], d: "O account usa o FCA para responder o Health Score e as flags." },
     { t: "Responder o Health Score", r: ["A", "GT"], d: "Cada um responde o Health Score da sua competência.", link: ["Health Score", "https://health-score-five.vercel.app/"] },
     { t: "Responder as flags na Central", r: ["A"], d: "Das flags saem os planos de ação, dentro da Central.", link: CENTRAL },
-    { t: "Criar as tarefas aprovadas no Ekyte", r: ["A"], d: "Depois que os planos de ação forem aprovados.", link: EKYTE }
+    EVID_A
   ]}
 ];
 
@@ -261,7 +270,7 @@ function updateMeter() {
 }
 
 function renderWeek() {
-  const days = DAYS.filter(d => red || !d.onlyRed);
+  const days = DAYS;
   const week = document.getElementById("week");
   week.style.setProperty("--cols", days.length);
   week.innerHTML = days.map(day => {
