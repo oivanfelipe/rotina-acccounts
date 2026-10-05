@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rotina do Account</title>
+<meta name="color-scheme" content="light">
+<style>html,body{margin:0}</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap">
+<style>
+/* Layout: cartaz editorial. Título gigante, medidor da semana como número de destaque, bloco "Todo dia" invertido com etiqueta vermelha sobreposta, colunas dos dias com deslocamento alternado e sombra sólida. */
+:root {
+  --bg: #ffffff;
+  --fg: #000000;
+  --red: #E10600;
+  --on-red: #ffffff;
+  --inv: var(--bg);
+  --font: "Archivo", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --line: 2px solid var(--fg);
+  --shadow: 4px 4px 0 var(--fg);
+  --shadow-s: 2px 2px 0 var(--fg);
+}
+:root, :root[data-theme="dark"] { --bg: #ffffff; --fg: #000000; color-scheme: light; }
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font); font-size: 15px; font-weight: 400; line-height: 1.5; }
+.wrap { max-width: 1440px; margin: 0 auto; padding-block: 32px 64px; padding-inline: 16px; display: flex; flex-direction: column; gap: 24px; }
+button, input { font-family: inherit; color: inherit; }
+a:focus-visible, button:focus-visible, input:focus-visible, label:focus-within { outline: 3px solid var(--red); outline-offset: 2px; }
+[hidden] { display: none !important; }
+
+/* Cabeçalho */
+.hero { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 24px 48px; align-items: end; }
+.eyebrow { display: flex; align-items: center; gap: 12px; margin: 0 0 16px; font-size: 12px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
+.eyebrow i { width: 12px; height: 12px; background: var(--red); flex: none; }
+h1 { margin: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 .22em; font-size: clamp(36px, 6.5vw, 80px); font-weight: 800; font-stretch: 75%; line-height: .95; letter-spacing: -.01em; text-transform: uppercase; }
+h1 .inv { color: inherit; }
+
+.meter { border: var(--line); box-shadow: var(--shadow); padding: 12px 16px 16px; min-width: 220px; background: var(--bg); }
+.meter-label { margin: 0; font-size: 12px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+.meter-num { margin: 0 0 8px; font-size: 52px; font-weight: 800; font-stretch: 75%; line-height: 1; font-variant-numeric: tabular-nums; }
+.meter-num .done { color: var(--red); }
+.meter-num .tot { font-size: 28px; opacity: .5; }
+.bar { height: 8px; border: 1px solid var(--fg); }
+.bar div { height: 100%; width: 0; background: var(--red); transition: width .2s; }
+
+/* Ferramentas e controles */
+.links, .controls { display: flex; flex-wrap: wrap; gap: 12px 16px; align-items: center; }
+.links a { display: inline-block; padding: 8px 16px; border: var(--line); background: var(--bg); color: var(--fg); box-shadow: var(--shadow-s); font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; text-decoration: none; }
+.links a:hover { transform: translate(1px, 1px); box-shadow: 1px 1px 0 var(--fg); }
+.btn { padding: 8px 16px; border: var(--line); background: var(--bg); box-shadow: var(--shadow-s); font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; }
+.btn:hover { transform: translate(1px, 1px); box-shadow: 1px 1px 0 var(--fg); }
+.red-toggle { display: inline-flex; align-items: center; gap: 12px; padding: 8px 16px; border: var(--line); background: var(--bg); box-shadow: var(--shadow-s); font-size: 13px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; }
+.red-toggle.on { background: var(--red); color: var(--on-red); --inv: var(--red); }
+.red-toggle.on input:checked { background: var(--on-red); border-color: var(--on-red); box-shadow: inset 0 0 0 3px var(--red); }
+.seg { display: inline-flex; border: var(--line); box-shadow: var(--shadow-s); background: var(--bg); }
+.seg button { padding: 8px 16px; border: 0; border-right: var(--line); background: transparent; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; }
+.seg button:last-child { border-right: 0; }
+.seg button[aria-pressed="true"] { background: var(--red); color: var(--on-red); }
+
+/* Checkbox: quadrado com preenchimento interno */
+input[type="checkbox"] { appearance: none; -webkit-appearance: none; margin: 0; flex: none; width: 20px; height: 20px; border: 2px solid currentColor; background: transparent; cursor: pointer; }
+input[type="checkbox"]:checked { background: currentColor; box-shadow: inset 0 0 0 3px var(--inv); }
+
+/* Faixa RED */
+.red-box { padding: 12px 16px; background: var(--bg); color: var(--fg); border: 2px solid var(--red); box-shadow: 4px 4px 0 var(--red); display: flex; flex-wrap: wrap; gap: 4px 24px; align-items: baseline; }
+.red-box strong { color: var(--red); font-size: 22px; font-weight: 800; font-stretch: 75%; letter-spacing: .02em; text-transform: uppercase; line-height: 1.1; }
+.red-box p { margin: 0; flex: 1 1 280px; font-weight: 500; }
+
+/* Todo dia: bloco invertido */
+.daily { position: relative; margin-top: 12px; padding: 32px 24px 8px; background: var(--bg); color: var(--fg); border: var(--line); box-shadow: var(--shadow); }
+.daily .tab { position: absolute; top: -14px; left: 16px; margin: 0; padding: 2px 12px; background: var(--red); color: var(--on-red); font-size: 18px; font-weight: 800; font-stretch: 75%; line-height: 1.3; text-transform: uppercase; }
+.daily .date { position: absolute; top: 8px; right: 24px; font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
+.daily ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 32px; }
+.daily .weekly-head { display: flex; justify-content: space-between; align-items: baseline; margin-top: 16px; padding-top: 12px; border-top: 1px solid currentColor; }
+.daily .weekly-head h3 { margin: 0; font-size: 18px; font-weight: 800; font-stretch: 75%; text-transform: uppercase; }
+.daily .weekly-head span { font-size: 12px; font-weight: 800; letter-spacing: .16em; }
+
+/* Semana */
+.week { display: grid; grid-template-columns: repeat(var(--cols, 4), minmax(0, 1fr)); gap: 24px; align-items: start; }
+.day { background: var(--bg); border: var(--line); box-shadow: var(--shadow); min-width: 0; }
+.day-head { padding: 12px 16px; border-bottom: 1px solid var(--fg); display: flex; flex-direction: column; gap: 4px; }
+.dow { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; font-size: 40px; font-weight: 800; font-stretch: 62%; line-height: .95; text-transform: uppercase; letter-spacing: -.01em; }
+.day h3 { margin: 0; font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+.day.today { border-color: var(--red); box-shadow: 4px 4px 0 var(--red); }
+.day.today .day-head { border-bottom-color: var(--red); }
+.day.today .dow { color: var(--red); }
+.badge-today { margin-top: 2px; padding: 2px 8px; background: var(--red); color: var(--on-red); font-size: 11px; font-weight: 800; font-stretch: 100%; letter-spacing: .14em; }
+
+ul { list-style: none; margin: 0; padding: 0; }
+.task { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px 12px; align-items: start; padding: 12px 16px; border-top: 1px solid currentColor; }
+.task:first-child { border-top: 0; }
+.task > input { margin-top: 1px; }
+.task label { cursor: pointer; font-size: 15px; font-weight: 600; overflow-wrap: break-word; }
+.task > input:checked + label { opacity: .45; text-decoration: line-through; text-decoration-thickness: 2px; }
+.more { grid-column: 2; justify-self: start; padding: 1px 8px; border: 1px solid currentColor; background: transparent; font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; cursor: pointer; white-space: nowrap; }
+.more::after { content: " +"; }
+.more[aria-expanded="true"]::after { content: " −"; }
+.more:hover, .more[aria-expanded="true"] { background: currentColor; }
+.more:hover, .more[aria-expanded="true"] { color: var(--inv); }
+.detail { grid-column: 2; padding-left: 12px; border-left: 2px solid currentColor; display: flex; flex-direction: column; gap: 4px; font-size: 14px; font-weight: 500; }
+.detail p { margin: 0; }
+.detail a { color: inherit; font-weight: 700; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.detail a:hover { color: var(--red); }
+.who { font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; opacity: .7; }
+.task.red label { font-weight: 800; }
+.chip { display: inline-block; margin-right: 8px; padding: 0 8px; background: var(--red); color: var(--on-red); font-size: 11px; font-weight: 800; letter-spacing: .14em; vertical-align: 1px; }
+
+@media (max-width: 1100px) {
+  .week { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .daily ul { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 700px) {
+  .wrap { gap: 24px; padding-block: 24px 48px; }
+  .hero { grid-template-columns: minmax(0, 1fr); }
+  .meter { min-width: 0; }
+  .week { grid-template-columns: minmax(0, 1fr); }
+  .daily { padding-inline: 16px; }
+  .daily .date { position: static; display: block; margin-bottom: 8px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <div>
+      <p class="eyebrow"><i></i><span id="weekRange">Semana</span></p>
+      <h1><span>Rotina</span><span class="inv">do Account</span></h1>
+    </div>
+    <div class="meter" aria-live="polite">
+      <p class="meter-label">Feitas na semana</p>
+      <p class="meter-num" id="meterNum"></p>
+      <div class="bar" aria-hidden="true"><div id="barFill"></div></div>
+    </div>
+  </header>
+
+  <nav class="links" aria-label="Ferramentas">
+    <a href="https://app.ekyte.com/#/home">Ekyte ↗</a>
+    <a href="https://central.studiov4carvalho.com.br/dashboard/squads">Central ↗</a>
+    <a href="https://health-score-five.vercel.app/">Health Score ↗</a>
+    <a href="https://docs.google.com/spreadsheets/d/1QTksU0kN_jOkSovEVr6OfAtHu-kkCDYGz4p6_o_LNIw/edit?gid=1536148557#gid=1536148557">Account Planning ↗</a>
+    <a href="https://sun-cashew-445.notion.site/POP-Protocolo-CGR-Prontu-rio-de-Growth-RED-GREEN-31ffc1fe7780809bbbe2fda3803e0336">POP RED ↗</a>
+  </nav>
+
+  <div class="controls">
+    <label class="red-toggle" id="redToggle"><input type="checkbox" id="redCheck"> Tenho cliente em RED</label>
+    <div class="seg" role="group" aria-label="Filtrar por papel">
+      <button type="button" data-role="all" aria-pressed="true">Todos</button>
+      <button type="button" data-role="A" aria-pressed="false">Account</button>
+      <button type="button" data-role="GT" aria-pressed="false">GT</button>
+    </div>
+    <button type="button" class="btn" id="expandAll">Expandir tudo</button>
+  </div>
+
+  <section class="red-box" id="redBox" hidden>
+    <strong>Cliente em RED</strong>
+    <p>Segunda: evidenciar no grupo as ações que serão executadas. De terça a sexta: update no grupo todo dia, sem exceção.</p>
+  </section>
+
+  <section class="daily" aria-label="Todo dia">
+    <h2 class="tab">Todo dia</h2>
+    <span class="date" id="todayLabel"></span>
+    <ul id="daily"></ul>
+    <div class="weekly-head"><h3>Toda semana</h3><span>1X</span></div>
+    <ul id="weekly"></ul>
+  </section>
+
+  <main id="week" class="week"></main>
+</div>
+
+<script>
+const CENTRAL = ["Central", "https://central.studiov4carvalho.com.br/dashboard/squads"];
+const EKYTE = ["Ekyte", "https://app.ekyte.com/#/home"];
+
+const DAILY = [
+  { t: "Evidência de serviço", r: ["A", "GT"], d: "Sem exceção. Alterne o assunto: campanha, resultado ou entrega. Account e GT dividem." },
+  { t: "Ativar o grupo do cliente", r: ["A", "GT"], d: "Mensagem no grupo todos os dias." }
+];
+const WEEKLY = [
+  { t: "Alinhar projetos com o GT", r: ["A", "GT"], d: "Por WhatsApp, reunião ou documento. O que importa é os dois estarem na mesma página." }
+];
+
+// Ações para cliente em RED (aparecem só com o interruptor ligado)
+const RED_PLAN = { t: "RED: evidenciar no grupo as ações a executar", r: ["A"], d: "Mostrar ao cliente, no grupo, as ações que serão executadas para ele durante a semana." };
+const RED_UPDATE = { t: "RED: update no grupo do cliente", r: ["A", "GT"], d: "Todo dia, sem exceção. O que está sendo feito, atualização de resultado e evidência de serviço." };
+
+const DAYS = [
+  { d: 1, dow: "Seg", h: "Comitê", red: [RED_PLAN], tasks: [
+    { t: "Realizar o comitê com o coordenador", r: ["A"], d: "Depende do que foi preparado na sexta anterior." },
+    { t: "Lançar as tarefas no Ekyte", r: ["A"], d: "Conforme as ações alinhadas e planejadas no comitê.", link: EKYTE }
+  ]},
+  { d: 2, dow: "Ter", h: "Campanhas", red: [RED_UPDATE], tasks: [
+    { t: "Atualizar o coordenador sobre as campanhas", r: ["A"], d: "Campanhas grandes de acompanhamento da unidade e campanhas sazonais: aniversário, Natal, Black etc." }
+  ]},
+  { d: 3, dow: "Qua", h: "Account Planning", red: [RED_UPDATE], tasks: [
+    { t: "Atualizar o coordenador no Account Planning", r: ["A"], d: "Pela planilha de Account Planning, com as monetizações em andamento.", link: ["Account Planning", "https://docs.google.com/spreadsheets/d/1QTksU0kN_jOkSovEVr6OfAtHu-kkCDYGz4p6_o_LNIw/edit?gid=1536148557#gid=1536148557"] }
+  ]},
+  { d: 4, dow: "Qui", h: "Update ao cliente", onlyRed: true, red: [RED_UPDATE], tasks: [] },
+  { d: 5, dow: "Sex", h: "Revisão e preparo do comitê", red: [RED_UPDATE], tasks: [
+    { t: "Revisar os rituais na Central", r: ["A", "GT"], d: "Conferir os rituais que foram executados na semana.", link: CENTRAL },
+    { t: "GT: atualizar resultados e meta geral na Central", r: ["GT"], d: "Olhar o resultado de todos os clientes, lançar na Central e atualizar a meta geral do cliente.", link: CENTRAL },
+    { t: "GT: passar o FCA de tráfego aos accounts", r: ["GT"], d: "O account usa o FCA para responder o Health Score e as flags." },
+    { t: "Responder o Health Score", r: ["A", "GT"], d: "Cada um responde o Health Score da sua competência.", link: ["Health Score", "https://health-score-five.vercel.app/"] },
+    { t: "Responder as flags na Central", r: ["A"], d: "Das flags saem os planos de ação, dentro da Central.", link: CENTRAL },
+    { t: "Criar as tarefas aprovadas no Ekyte", r: ["A"], d: "Depois que os planos de ação forem aprovados.", link: EKYTE }
+  ]}
+];
+
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} },
+  del(k) { try { localStorage.removeItem(k); } catch (e) {} }
+};
+const pad = n => String(n).padStart(2, "0");
+function mondayOf(date) {
+  const d = new Date(date); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return d;
+}
+const now = new Date();
+const monday = mondayOf(now);
+const friday = new Date(monday); friday.setDate(monday.getDate() + 4);
+const WK = "rotina:" + monday.getFullYear() + pad(monday.getMonth() + 1) + pad(monday.getDate());
+const todayNum = now.getDay();
+let checked = {};
+try { checked = JSON.parse(store.get(WK) || "{}"); } catch (e) { checked = {}; }
+try { Object.keys(localStorage).filter(k => /^rotina:\d{8}$/.test(k) && k !== WK).forEach(k => store.del(k)); } catch (e) {}
+
+const fmt = d => d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" }).replace(".", "").toUpperCase();
+document.getElementById("weekRange").textContent = "Semana " + fmt(monday) + " — " + fmt(friday);
+
+const esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+function taskHtml(id, task, extraClass) {
+  const link = task.link ? '<p><a href="' + task.link[1] + '">Abrir ' + esc(task.link[0]) + " ↗</a></p>" : "";
+  const who = '<p class="who">' + task.r.map(x => ({ A: "Account", GT: "GT" }[x])).join(" + ") + "</p>";
+  const isRed = extraClass === "red";
+  const title = isRed ? '<span class="chip">RED</span>' + esc(task.t.replace(/^RED:\s*/, "")) : esc(task.t);
+  return '<li class="task ' + (extraClass || "") + '" data-roles="' + task.r.join(",") + '">' +
+    '<input type="checkbox" id="' + id + '"' + (checked[id] ? " checked" : "") + ">" +
+    '<label for="' + id + '">' + title + "</label>" +
+    '<button type="button" class="more" aria-expanded="false" aria-controls="' + id + '-d">detalhes</button>' +
+    '<div class="detail" id="' + id + '-d" hidden><p>' + esc(task.d) + "</p>" + link + who + "</div></li>";
+}
+
+const dayKey = "d" + now.getFullYear() + pad(now.getMonth() + 1) + pad(now.getDate());
+document.getElementById("daily").innerHTML = DAILY.map((t, i) => taskHtml(dayKey + "-x" + i, t)).join("");
+document.getElementById("weekly").innerHTML = WEEKLY.map((t, i) => taskHtml("w-" + i, t)).join("");
+document.getElementById("todayLabel").textContent = now.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" });
+
+let red = store.get("rotina:red") === "1";
+let role = store.get("rotina:role") || "all";
+
+function updateMeter() {
+  const boxes = [...document.querySelectorAll(".task")].filter(li => !li.hidden).map(li => li.querySelector("input"));
+  const done = boxes.filter(b => b.checked).length, total = boxes.length;
+  document.getElementById("meterNum").innerHTML = '<span class="done">' + pad(done) + '</span><span class="tot">/' + pad(total) + "</span>";
+  document.getElementById("barFill").style.width = (total ? Math.round(done / total * 100) : 0) + "%";
+}
+
+function renderWeek() {
+  const days = DAYS.filter(d => red || !d.onlyRed);
+  const week = document.getElementById("week");
+  week.style.setProperty("--cols", days.length);
+  week.innerHTML = days.map(day => {
+    const isToday = day.d === todayNum;
+    const items = (red && day.red ? day.red.map((t, i) => taskHtml("c-" + day.d + "-red" + i, t, "red")).join("") : "") +
+      day.tasks.map((t, i) => taskHtml("c-" + day.d + "-" + i, t)).join("");
+    return '<article class="day' + (isToday ? " today" : "") + '" aria-label="' + day.dow + '">' +
+      '<div class="day-head"><div class="dow"><span>' + day.dow + "</span>" + (isToday ? '<span class="badge-today">HOJE</span>' : "") + "</div>" +
+      "<h3>" + esc(day.h) + "</h3></div><ul>" + items + "</ul></article>";
+  }).join("");
+  applyRole(role);
+}
+
+function applyRole(r) {
+  role = r;
+  document.querySelectorAll(".seg button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.role === r)));
+  document.querySelectorAll(".task").forEach(li => {
+    li.hidden = r !== "all" && !li.dataset.roles.split(",").includes(r);
+  });
+  store.set("rotina:role", r);
+  updateMeter();
+}
+
+function applyRed() {
+  document.getElementById("redCheck").checked = red;
+  document.getElementById("redToggle").classList.toggle("on", red);
+  document.getElementById("redBox").hidden = !red;
+  store.set("rotina:red", red ? "1" : "0");
+  renderWeek();
+}
+
+document.addEventListener("change", e => {
+  if (e.target.id === "redCheck") { red = e.target.checked; applyRed(); return; }
+  if (e.target.matches('.task input[type="checkbox"]')) {
+    if (e.target.checked) checked[e.target.id] = 1; else delete checked[e.target.id];
+    store.set(WK, JSON.stringify(checked));
+    updateMeter();
+  }
+});
+document.addEventListener("click", e => {
+  const more = e.target.closest(".more");
+  if (more) {
+    const open = more.getAttribute("aria-expanded") !== "true";
+    more.setAttribute("aria-expanded", String(open));
+    document.getElementById(more.getAttribute("aria-controls")).hidden = !open;
+  }
+  const seg = e.target.closest(".seg button");
+  if (seg) applyRole(seg.dataset.role);
+});
+let allOpen = false;
+document.getElementById("expandAll").addEventListener("click", e => {
+  allOpen = !allOpen;
+  document.querySelectorAll(".more").forEach(b => {
+    b.setAttribute("aria-expanded", String(allOpen));
+    document.getElementById(b.getAttribute("aria-controls")).hidden = !allOpen;
+  });
+  e.target.textContent = allOpen ? "Recolher tudo" : "Expandir tudo";
+});
+
+applyRed();
+</script>
+
+</body>
+</html>
